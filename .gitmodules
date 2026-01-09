@@ -1,3 +1,4 @@
 [submodule "CaptureModule_PiR3s_Web"]
 	path = CaptureModule_PiR3s_Web
 	url = git@github.com:KatiGithub/CaptureModule_PiR3s_Web.git
+	branch = main
