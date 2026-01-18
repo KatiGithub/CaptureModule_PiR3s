@@ -1,3 +1,0 @@
-/home/katip/dev/CaptureModule_PiR3s/app/build/CMakeFiles/packet_bridge.dir
-/home/katip/dev/CaptureModule_PiR3s/app/build/CMakeFiles/edit_cache.dir
-/home/katip/dev/CaptureModule_PiR3s/app/build/CMakeFiles/rebuild_cache.dir
