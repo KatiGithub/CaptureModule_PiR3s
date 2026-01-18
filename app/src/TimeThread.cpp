@@ -39,6 +39,7 @@ void TimeThread::timeLoop() {
         int64_t calculated_time = virtual_anchor + elapsed_ns;
 
         current_time.store(calculated_time);
+        // std::cout << "New time calculated: " << std::to_string(calculated_time) << std::endl;
         std::this_thread::sleep_for(milliseconds(10));
     }
 }

@@ -27,8 +27,11 @@ int main() {
     std::cout << "Logging to eth0" << std::endl;
     std::cout << "----------------------------------------------" << std::endl;
 
+    std::thread timerThread(&TimeThread::timeLoop, &timeThread);
+
 
     if(webThread.joinable()) webThread.join();
     if(captureThread.joinable()) captureThread.join();
+    if(timerThread.joinable()) timerThread.join();
     return 0;
 }

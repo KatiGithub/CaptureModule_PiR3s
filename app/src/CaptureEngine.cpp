@@ -5,18 +5,45 @@
 #include <iostream>
 #include <pcap.h>
 #include <string>
+#include <fstream>
 #include <cstring>
 #include <thread>
 #include <chrono>
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
+#include <stdio.h>
 
+static const uint16_t TYPE_TCP = 0x0001;
+static const uint16_t TYPE_UDP = 0x0002;
+static const uint16_t TYPE_ARP = 0x0003;
+static const uint16_t TYPE_OTHER = 0x0004;
 
-static const uint16_t TYPE_TCP = 1;
-static const uint16_t TYPE_UDP = 2;
-static const uint16_t TYPE_ARP = 3;
-static const uint16_t TYPE_OTHER = 4;
+// ... other includes ...
+
+int check_link_file(const char *ifname) {
+    // 1. Use the 'carrier' file, not 'operstate'
+    // 'carrier' is 1 (UP) or 0 (DOWN) based on physical connection.
+    char path[128];
+    snprintf(path, sizeof(path), "/sys/class/net/%s/carrier", ifname);
+
+    // 2. Open a new stream every time to avoid buffering stale data
+    std::ifstream file(path);
+    
+    if (!file.is_open()) {
+        return -1; // Interface likely doesn't exist
+    }
+
+    std::string line;
+    std::cout << line << std::endl;
+    if (std::getline(file, line)) {
+        // 3. Simple check: "1" = Link Up, "0" = Link Down
+        if (line == "1") return 1;
+        return 0;
+    }
+    
+    return 0;
+}
 
 pcap_t* openInterface(const std::string device, char* errbuf) {
     pcap_t* handle = pcap_open_live(device.c_str(), 65535, 1, 10, errbuf);
@@ -62,10 +89,10 @@ void CaptureEngine::incrementPacketCount(uint16_t packetType) {
 void CaptureEngine::engineLoop(ConfigManager* configManager, TimeThread* timeThread) {
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    pcap_t* rx = openInterface("eth1", errbuf); // port without sticker
+    CaptureEngine::rx = openInterface("eth1", errbuf); // port without sticker
     pcap_t* tx = openInterface("eth0", errbuf); // port with sticker
 
-    RxPortLink = (rx != NULL);
+    // RxPortLink = (!rx);
 
     if(!rx || !tx) return;
     struct pcap_pkthdr* header;
@@ -73,6 +100,14 @@ void CaptureEngine::engineLoop(ConfigManager* configManager, TimeThread* timeThr
 
     uint8_t tx_buffer[2000];
     while(true) {
+        int status = check_link_file("eth1");
+
+        if(status == 1) {
+            RxPortLink = true;
+        } else {
+            RxPortLink = false;
+        }
+
         int res = pcap_next_ex(rx, &header, &original_packet);
         if(res == 1) {
 

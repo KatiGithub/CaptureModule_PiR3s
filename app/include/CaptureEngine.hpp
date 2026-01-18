@@ -3,6 +3,10 @@
 #include "ConfigManager.hpp"
 #include "TimeThread.hpp"
 
+#include <pcap.h>
+
+
+pcap_t* openInterface(const std::string device, char* errbuf);
 
 class CaptureEngine {
     private:
@@ -13,6 +17,9 @@ class CaptureEngine {
         int32_t arpCount{0};
         int32_t udpCount{0};
         int32_t othersCount{0};
+
+        pcap_t* rx;
+
         bool RxPortLink{false};
         
         void engineLoop(ConfigManager* configManager, TimeThread* timeThread);

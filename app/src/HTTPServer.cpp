@@ -2,7 +2,10 @@
 #include "ConfigManager.hpp"
 #include "CaptureEngine.hpp"
 #include "TimeThread.hpp"
+#include "InjectionModule.hpp"
 #include "crow/crow_all.h"
+
+#include <vector>
 
 void startServer(ConfigManager* config, TimeThread* timeThread, CaptureEngine* captureEngine) {
     crow::SimpleApp app;
@@ -40,7 +43,20 @@ void startServer(ConfigManager* config, TimeThread* timeThread, CaptureEngine* c
     });
 
     CROW_ROUTE(app, "/api/injectPacket").methods(crow::HTTPMethod::POST)
-    ([&config]() {
+    ([&config, &timeThread, &captureEngine](const crow::request& req) {
+
+        uint32_t length = req.body.size();
+
+        if(length > 0) {
+            injectPacket(
+                captureEngine,
+                timeThread,
+                (char*) req.body.data(),
+                length
+            );
+        }
+
+
         return crow::response(200);
     });
 
